@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoGebra Engine Pro</title>
+    <title>Geome4Vulcan</title>
     
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.4.1/jsxgraph.css" />
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.4.1/jsxgraphcore.js"></script>
@@ -16,6 +16,7 @@
             --sidebar-bg: #1e293b;
             --accent: #6366f1;
             --accent-hover: #4f46e5;
+            --success: #10b981;
             --text: #f8fafc;
             --text-muted: #94a3b8;
             --border: #334155;
@@ -36,39 +37,37 @@
 
         /* Panoul lateral */
         .sidebar {
-            width: 350px;
+            width: 360px;
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border);
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
             overflow-y: auto;
             z-index: 10;
             box-shadow: 4px 0 15px rgba(0,0,0,0.3);
         }
 
         h2 {
-            margin: 0;
-            font-size: 1.5rem;
+            margin: 0 0 5px 0;
+            font-size: 1.6rem;
             color: var(--text);
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            text-align: center;
         }
         
         h2 span { color: var(--accent); }
 
         .control-group {
             background: #111827;
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
             border: 1px solid var(--border);
         }
 
         .control-group h3 {
             margin: 0 0 10px 0;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--text-muted);
@@ -77,13 +76,13 @@
         .input-box {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 10px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
 
         input {
             width: 100%;
-            padding: 10px;
+            padding: 9px;
             border-radius: 6px;
             border: 1px solid var(--border);
             background: #1e293b;
@@ -98,7 +97,14 @@
 
         .row {
             display: flex;
-            gap: 8px;
+            gap: 6px;
+        }
+        
+        .row-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            font-weight: bold;
         }
 
         button {
@@ -111,16 +117,19 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
+            font-size: 0.9rem;
         }
 
         button:hover { background: var(--accent-hover); }
+        button.success-btn { background: var(--success); }
+        button.success-btn:hover { background: #059669; }
         button.danger { background: #ef4444; }
         button.danger:hover { background: #dc2626; }
 
         /* Lista cu elementele adăugate */
         .items-list {
-            margin-top: 10px;
-            max-height: 150px;
+            margin-top: 5px;
+            max-height: 140px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -142,6 +151,8 @@
             color: #ef4444;
             cursor: pointer;
             font-weight: bold;
+            font-size: 1.1rem;
+            padding-left: 5px;
         }
 
         /* Zona cu graficul */
@@ -156,10 +167,9 @@
             height: 100%;
         }
 
-        /* Corecție afișare pe telefoane / tablete */
         @media (max-width: 768px) {
             body { flex-direction: column; }
-            .sidebar { width: 100%; height: 45vh; border-right: none; border-bottom: 1px solid var(--border); }
+            .sidebar { width: 100%; height: 50vh; border-right: none; border-bottom: 1px solid var(--border); }
             .canvas-area { height: 55vh; }
         }
     </style>
@@ -167,32 +177,49 @@
 <body>
 
     <div class="sidebar">
-        <h2><span>Math</span>Engine Pro</h2>
+        <h2><span>Geome4</span>Vulcan</h2>
         
         <div class="control-group">
-            <h3>Adaugă Funcție f(x)</h3>
+            <h3>Introduce $f(x)$ direct</h3>
             <div class="input-box">
-                <input type="text" id="funInput" placeholder="Ex: x^2 - 4, sin(x), sqrt(x)">
+                <input type="text" id="funInput" placeholder="Ex: x^2 - 3, sin(x), 2*x + 1">
             </div>
-            <button onclick="addFunction()">Trasează f(x)</button>
+            <button onclick="addFunction()">Trasează Gf</button>
         </div>
 
         <div class="control-group">
-            <h3>Adaugă Punct Precis</h3>
+            <h3>Află $f(x)$ prin 2 Puncte</h3>
+            
+            <div class="row-label">Punctul 1 (A)</div>
+            <div class="row" style="margin-bottom: 8px;">
+                <input type="number" id="2ptX1" placeholder="X1" step="any">
+                <input type="number" id="2ptY1" placeholder="Y1" step="any">
+            </div>
+
+            <div class="row-label">Punctul 2 (B)</div>
+            <div class="row" style="margin-bottom: 10px;">
+                <input type="number" id="2ptX2" placeholder="X2" step="any">
+                <input type="number" id="2ptY2" placeholder="Y2" step="any">
+            </div>
+            
+            <button class="success-btn" onclick="calculateFunctionFromPoints()">Calculează și Trasează Gf</button>
+        </div>
+
+        <div class="control-group">
+            <h3>Adaugă Punct Izolat</h3>
             <div class="input-box">
                 <div class="row">
-                    <input type="number" id="ptX" placeholder="Coordonata X" step="any">
-                    <input type="number" id="ptY" placeholder="Coordonata Y" step="any">
+                    <input type="number" id="ptX" placeholder="X" step="any">
+                    <input type="number" id="ptY" placeholder="Y" step="any">
                 </div>
-                <input type="text" id="ptName" placeholder="Nume punct (Ex: A)">
+                <input type="text" id="ptName" placeholder="Nume (Ex: M)">
             </div>
             <button onclick="addPoint()">Plasează Punct</button>
         </div>
 
         <div class="control-group">
             <h3>Elemente active</h3>
-            <div id="elementsList" class="items-list">
-                </div>
+            <div id="elementsList" class="items-list"></div>
         </div>
 
         <button class="danger" onclick="resetBoard()">Resetează Tot</button>
@@ -203,75 +230,123 @@
     </div>
 
     <script>
-        // Inițializare JSXGraph cu setări vizuale curate
+        // Inițializare plan cartezian
         var board = JXG.JSXGraph.initBoard('box', {
-            boundingbox: [-6, 6, 6, -6], 
+            boundingbox: [-8, 8, 8, -8], 
             axis: true,
             grid: true,
             showCopyright: false,
             keepaspectratio: false
         });
 
-        // Tablou în care stocăm obiectele ca să le putem manipula/șterge
         var objectsMap = {};
         var objectCounter = 0;
 
-        // 1. ADAUGĂ FUNCȚIE FOLOSIND MATH.JS (SIGUR ȘI COMPLEX)
+        // 1. ADAUGĂ FUNCȚIE DIRECTĂ
         function addFunction() {
             var rawInput = document.getElementById('funInput').value.trim();
             if(!rawInput) return;
 
             try {
-                // Compilăm expresia matematică prin math.js
                 const compiledExpr = math.compile(rawInput);
-
-                // Creăm graficul în JSXGraph evaluând funcția compilat la fiecare punct x
                 var graph = board.create('functiongraph', [
-                    function(x) {
-                        return compiledExpr.evaluate({ x: x });
-                    }
+                    function(x) { return compiledExpr.evaluate({ x: x }); }
                 ], { strokeWidth: 3, strokeColor: '#6366f1' });
 
                 var id = 'func_' + objectCounter++;
-                objectsMap[id] = graph;
+                objectsMap[id] = [graph];
 
                 updateUIList(id, `f(x) = ${rawInput}`);
                 document.getElementById('funInput').value = '';
             } catch (err) {
-                alert("Eroare de sintaxă matematică! Verifică dacă ai scris corect ecuația.");
+                alert("Eroare de sintaxă matematică! Verifică expresia.");
             }
         }
 
-        // 2. ADAUGĂ PUNCT INTERACTIV
+        // 2. AFLĂ F(X) ȘI TRASEAZĂ GF PRIN DOUĂ PUNCTE
+        function calculateFunctionFromPoints() {
+            var x1 = parseFloat(document.getElementById('2ptX1').value);
+            var y1 = parseFloat(document.getElementById('2ptY1').value);
+            var x2 = parseFloat(document.getElementById('2ptX2').value);
+            var y2 = parseFloat(document.getElementById('2ptY2').value);
+
+            if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+                alert("Te rog introdu toate coordonatele pentru cele două puncte.");
+                return;
+            }
+
+            if (x1 === x2) {
+                alert("Pentru a determina o funcție f(x), punctele nu pot avea aceeași coordonată X (dreapta ar fi verticală, deci nu e funcție).");
+                return;
+            }
+
+            // Calculăm panta (m) și ordonata la origine (n) pentru f(x) = mx + n
+            // m = (y2 - y1) / (x2 - x1)
+            // n = y1 - m * x1
+            var m = (y2 - y1) / (x2 - x1);
+            var n = y1 - m * x1;
+
+            // Generăm textul ecuației simplificat vizual pentru utilizator
+            var equationText = "";
+            if (m !== 0) {
+                equationText += (m === 1 ? "" : (m === -1 ? "-" : math.format(m, {precision: 4}))) + "x";
+            }
+            if (n !== 0) {
+                if (n > 0 && m !== 0) equationText += " + ";
+                if (n < 0 && m !== 0) equationText += " - ";
+                equationText += math.format(Math.abs(n), {precision: 4});
+            }
+            if (m === 0 && n === 0) equationText = "0";
+
+            // Desenăm punctele fizice A și B pe grafic ca repere istorice
+            var pA = board.create('point', [x1, y1], {name: 'A', size: 3, color: '#10b981'});
+            var pB = board.create('point', [x2, y2], {name: 'B', size: 3, color: '#10b981'});
+
+            // Trasam graficul funcției liniare determinate
+            var graph = board.create('functiongraph', [
+                function(x) { return m * x + n; }
+            ], { strokeWidth: 3, strokeColor: '#10b981' });
+
+            var id = 'func_2pt_' + objectCounter++;
+            // Salvăm referințele tuturor celor 3 elemente create ca să le ștergem simultan dacă apasă pe X
+            objectsMap[id] = [graph, pA, pB];
+
+            updateUIList(id, `f(x) = ${equationText} (prin A și B)`);
+
+            // Curățăm input-urile specifice
+            document.getElementById('2ptX1').value = '';
+            document.getElementById('2ptY1').value = '';
+            document.getElementById('2ptX2').value = '';
+            document.getElementById('2ptY2').value = '';
+        }
+
+        // 3. ADAUGĂ PUNCT IZOLAT
         function addPoint() {
             var xVal = parseFloat(document.getElementById('ptX').value);
             var yVal = parseFloat(document.getElementById('ptY').value);
             var nameVal = document.getElementById('ptName').value.trim() || 'P';
 
             if(isNaN(xVal) || isNaN(yVal)) {
-                alert("Te rog introdu coordonate numerice valide.");
+                alert("Introdu coordonate valide.");
                 return;
             }
 
             var point = board.create('point', [xVal, yVal], {
-                name: nameVal,
-                size: 4,
-                color: '#ec4899',
+                name: nameVal, size: 4, color: '#ec4899',
                 label: { offset: [10, 10], color: '#0f172a', fontWeight: 'bold' }
             });
 
             var id = 'point_' + objectCounter++;
-            objectsMap[id] = point;
+            objectsMap[id] = [point];
 
-            updateUIList(id, `Punct ${nameVal} (${xVal}, ${yVal})`);
+            updateUIList(id, `Punct ${nameVal}(${xVal}, ${yVal})`);
             
-            // Reset inputs
             document.getElementById('ptX').value = '';
             document.getElementById('ptY').value = '';
             document.getElementById('ptName').value = '';
         }
 
-        // 3. ACTUALIZEAZĂ LISTA DIN PANOU
+        // 4. MANAGEMENT INTERFAȚĂ LISTĂ
         function updateUIList(id, labelText) {
             var listDiv = document.getElementById('elementsList');
             var itemHtml = document.createElement('div');
@@ -284,10 +359,13 @@
             listDiv.appendChild(itemHtml);
         }
 
-        // 4. ȘTERGE UN SINGUR ELEMENT DIN GRAFIC ȘI DIN LISTĂ
+        // 5. ȘTERGERE OBIECTE
         function deleteObject(id) {
             if(objectsMap[id]) {
-                board.removeObject(objectsMap[id]);
+                // Iterăm prin array-ul de elemente salvate pe acel ID (ex: funcția + cele 2 puncte aferente)
+                objectsMap[id].forEach(function(obj) {
+                    board.removeObject(obj);
+                });
                 delete objectsMap[id];
                 
                 var uiElem = document.getElementById('ui_' + id);
@@ -297,10 +375,12 @@
             }
         }
 
-        // 5. REPORNEȘTE TOTUL DE LA ZERO
+        // 6. RESETARE GENERALĂ
         function resetBoard() {
             for(var id in objectsMap) {
-                board.removeObject(objectsMap[id]);
+                objectsMap[id].forEach(function(obj) {
+                    board.removeObject(obj);
+                });
             }
             objectsMap = {};
             document.getElementById('elementsList').innerHTML = '';
