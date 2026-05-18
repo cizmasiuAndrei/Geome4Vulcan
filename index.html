@@ -1,84 +1,98 @@
-
 <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoGebra Advanced Clone</title>
+    <title>GeoGebra Engine Pro</title>
     
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.4.1/jsxgraph.css" />
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.4.1/jsxgraphcore.js"></script>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    
     <style>
         :root {
-            --bg-dark: #121214;
-            --sidebar-bg: #1a1a1e;
+            --bg-main: #0f172a;
+            --sidebar-bg: #1e293b;
             --accent: #6366f1;
             --accent-hover: #4f46e5;
-            --text-main: #f3f4f6;
-            --border: #2e2e38;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
         }
 
+        * { box-sizing: border-box; }
+        
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
+            background-color: var(--bg-main);
+            color: var(--text);
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: row;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Panoul de control (Sidebar) */
+        /* Panoul lateral */
         .sidebar {
-            width: 320px;
+            width: 350px;
             background-color: var(--sidebar-bg);
             border-right: 1px solid var(--border);
             padding: 20px;
-            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             gap: 20px;
             overflow-y: auto;
+            z-index: 10;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.3);
         }
 
         h2 {
-            margin-top: 0;
-            font-size: 1.4rem;
-            color: var(--accent);
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 10px;
-        }
-
-        .section {
+            margin: 0;
+            font-size: 1.5rem;
+            color: var(--text);
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 10px;
-            background: #222227;
-            padding: 12px;
-            border-radius: 8px;
+        }
+        
+        h2 span { color: var(--accent); }
+
+        .control-group {
+            background: #111827;
+            padding: 15px;
+            border-radius: 10px;
             border: 1px solid var(--border);
         }
 
-        .section h3 {
-            margin: 0 0 5px 0;
-            font-size: 1rem;
-            color: #a1a1aa;
+        .control-group h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
         }
 
-        input, button {
+        .input-box {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        input {
+            width: 100%;
             padding: 10px;
             border-radius: 6px;
             border: 1px solid var(--border);
-            background: #121214;
+            background: #1e293b;
             color: #fff;
-            font-size: 0.95rem;
-            outline: none;
+            font-size: 0.9rem;
         }
 
         input:focus {
+            outline: none;
             border-color: var(--accent);
         }
 
@@ -87,27 +101,54 @@
             gap: 8px;
         }
 
-        .row input {
-            width: 50%;
-        }
-
         button {
-            background: var(--accent);
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
             border: none;
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        button:hover {
-            background: var(--accent-hover);
+        button:hover { background: var(--accent-hover); }
+        button.danger { background: #ef4444; }
+        button.danger:hover { background: #dc2626; }
+
+        /* Lista cu elementele adăugate */
+        .items-list {
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
-        /* Zona Grafică */
-        .canvas-container {
+        .item-tag {
+            background: #1e293b;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+        }
+
+        .item-tag span.delete {
+            color: #ef4444;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Zona cu graficul */
+        .canvas-area {
             flex-grow: 1;
             position: relative;
-            background: #fff;
+            background: #ffffff;
         }
 
         #box {
@@ -115,127 +156,154 @@
             height: 100%;
         }
 
-        /* Responsive pentru telefoane */
+        /* Corecție afișare pe telefoane / tablete */
         @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                height: 40vh;
-                border-right: none;
-                border-bottom: 1px solid var(--border);
-            }
-            .canvas-container {
-                height: 60vh;
-            }
+            body { flex-direction: column; }
+            .sidebar { width: 100%; height: 45vh; border-right: none; border-bottom: 1px solid var(--border); }
+            .canvas-area { height: 55vh; }
         }
     </style>
 </head>
 <body>
 
     <div class="sidebar">
-        <h2>GeoGebra Engine</h2>
+        <h2><span>Math</span>Engine Pro</h2>
         
-        <div class="section">
-            <h3>Reprezintă f(x)</h3>
-            <input type="text" id="functionInput" placeholder="Ex: x^2 - 2*x, sin(x), 2*x+1">
-            <button onclick="plotFunction()">Trasează Graficul</button>
-        </div>
-
-        <div class="section">
-            <h3>Adaugă Punct (X, Y)</h3>
-            <div class="row">
-                <input type="number" id="pointX" placeholder="X" step="any">
-                <input type="number" id="pointY" placeholder="Y" step="any">
+        <div class="control-group">
+            <h3>Adaugă Funcție f(x)</h3>
+            <div class="input-box">
+                <input type="text" id="funInput" placeholder="Ex: x^2 - 4, sin(x), sqrt(x)">
             </div>
-            <input type="text" id="pointName" placeholder="Nume (Ex: A, B, M)">
-            <button onclick="addNewPoint()">Plasează Punctul</button>
+            <button onclick="addFunction()">Trasează f(x)</button>
         </div>
 
-        <div class="section">
-            <h3>Acțiuni</h3>
-            <button onclick="clearAll()" style="background: #ef4444;">Șterge Tot</button>
+        <div class="control-group">
+            <h3>Adaugă Punct Precis</h3>
+            <div class="input-box">
+                <div class="row">
+                    <input type="number" id="ptX" placeholder="Coordonata X" step="any">
+                    <input type="number" id="ptY" placeholder="Coordonata Y" step="any">
+                </div>
+                <input type="text" id="ptName" placeholder="Nume punct (Ex: A)">
+            </div>
+            <button onclick="addPoint()">Plasează Punct</button>
         </div>
+
+        <div class="control-group">
+            <h3>Elemente active</h3>
+            <div id="elementsList" class="items-list">
+                </div>
+        </div>
+
+        <button class="danger" onclick="resetBoard()">Resetează Tot</button>
     </div>
 
-    <div class="canvas-container">
+    <div class="canvas-area">
         <div id="box" class="jxgbox"></div>
     </div>
 
     <script>
-        // Inițializăm planul grafic
+        // Inițializare JSXGraph cu setări vizuale curate
         var board = JXG.JSXGraph.initBoard('box', {
-            boundingbox: [-8, 8, 8, -8], 
+            boundingbox: [-6, 6, 6, -6], 
             axis: true,
             grid: true,
             showCopyright: false,
             keepaspectratio: false
         });
 
-        // Liste pentru a ține evidența elementelor adăugate ca să le putem șterge la nevoie
-        var plottedElements = [];
+        // Tablou în care stocăm obiectele ca să le putem manipula/șterge
+        var objectsMap = {};
+        var objectCounter = 0;
 
-        // 1. FUNCȚIE: Trasează f(x)
-        function plotFunction() {
-            var expr = document.getElementById('functionInput').value;
-            if (!expr) return;
+        // 1. ADAUGĂ FUNCȚIE FOLOSIND MATH.JS (SIGUR ȘI COMPLEX)
+        function addFunction() {
+            var rawInput = document.getElementById('funInput').value.trim();
+            if(!rawInput) return;
 
             try {
-                // Curățăm textul pentru a fi sigur că funcțiile ca sin/cos/tan sunt recunoscute
-                // JSXGraph folosește JavaScript nativ în spate pentru evaluarea funcțiilor
+                // Compilăm expresia matematică prin math.js
+                const compiledExpr = math.compile(rawInput);
+
+                // Creăm graficul în JSXGraph evaluând funcția compilat la fiecare punct x
                 var graph = board.create('functiongraph', [
                     function(x) {
-                        // Transformăm ^ în cod interpretat Math.pow de JS sau valid pentru parser
-                        // Folosim Math pentru funcții complexe direct în string dacă e cazul
-                        with (Math) {
-                            // Înlocuim x^2 cu x*x sau folosim o metodă sigură pentru puteri simple
-                            let safeExpr = expr.replace(/x\^2/g, "(x*x)").replace(/x\^3/g, "(x*x*x)");
-                            return eval(safeExpr);
-                        }
+                        return compiledExpr.evaluate({ x: x });
                     }
-                ], {strokeWidth: 3, strokeColor: '#6366f1'});
-                
-                plottedElements.push(graph);
-                document.getElementById('functionInput').value = ''; // Reset input
-            } catch (error) {
-                alert("Eroare la sintaxă! Folosește '*' pentru înmulțire (Ex: 2*x în loc de 2x) și format valid.");
+                ], { strokeWidth: 3, strokeColor: '#6366f1' });
+
+                var id = 'func_' + objectCounter++;
+                objectsMap[id] = graph;
+
+                updateUIList(id, `f(x) = ${rawInput}`);
+                document.getElementById('funInput').value = '';
+            } catch (err) {
+                alert("Eroare de sintaxă matematică! Verifică dacă ai scris corect ecuația.");
             }
         }
 
-        // 2. FUNCȚIE: Adaugă Punct Coordonate
-        function addNewPoint() {
-            var x = parseFloat(document.getElementById('pointX').value);
-            var y = parseFloat(document.getElementById('pointY').value);
-            var name = document.getElementById('pointName').value || 'P';
+        // 2. ADAUGĂ PUNCT INTERACTIV
+        function addPoint() {
+            var xVal = parseFloat(document.getElementById('ptX').value);
+            var yVal = parseFloat(document.getElementById('ptY').value);
+            var nameVal = document.getElementById('ptName').value.trim() || 'P';
 
-            if (isNaN(x) || isNaN(y)) {
-                alert("Te rog introdu coordonate valide pentru X și Y.");
+            if(isNaN(xVal) || isNaN(yVal)) {
+                alert("Te rog introdu coordonate numerice valide.");
                 return;
             }
 
-            // Generăm punctul pe axă
-            var point = board.create('point', [x, y], {
-                name: name, 
-                size: 4, 
-                color: '#ec4899', 
-                withLabel: true,
-                label: {offset: [10, 10], color: '#121214'}
+            var point = board.create('point', [xVal, yVal], {
+                name: nameVal,
+                size: 4,
+                color: '#ec4899',
+                label: { offset: [10, 10], color: '#0f172a', fontWeight: 'bold' }
             });
 
-            plottedElements.push(point);
+            var id = 'point_' + objectCounter++;
+            objectsMap[id] = point;
+
+            updateUIList(id, `Punct ${nameVal} (${xVal}, ${yVal})`);
             
-            // Resetăm câmpurile
-            document.getElementById('pointX').value = '';
-            document.getElementById('pointY').value = '';
-            document.getElementById('pointName').value = '';
+            // Reset inputs
+            document.getElementById('ptX').value = '';
+            document.getElementById('ptY').value = '';
+            document.getElementById('ptName').value = '';
         }
 
-        // 3. FUNCȚIE: Resetare ecran
-        function clearAll() {
-            board.removeObject(plottedElements);
-            plottedElements = [];
-            // Re-inițializăm board-ul curat
+        // 3. ACTUALIZEAZĂ LISTA DIN PANOU
+        function updateUIList(id, labelText) {
+            var listDiv = document.getElementById('elementsList');
+            var itemHtml = document.createElement('div');
+            itemHtml.className = 'item-tag';
+            itemHtml.id = 'ui_' + id;
+            itemHtml.innerHTML = `
+                <span>${labelText}</span>
+                <span class="delete" onclick="deleteObject('${id}')">×</span>
+            `;
+            listDiv.appendChild(itemHtml);
+        }
+
+        // 4. ȘTERGE UN SINGUR ELEMENT DIN GRAFIC ȘI DIN LISTĂ
+        function deleteObject(id) {
+            if(objectsMap[id]) {
+                board.removeObject(objectsMap[id]);
+                delete objectsMap[id];
+                
+                var uiElem = document.getElementById('ui_' + id);
+                if(uiElem) uiElem.remove();
+                
+                board.update();
+            }
+        }
+
+        // 5. REPORNEȘTE TOTUL DE LA ZERO
+        function resetBoard() {
+            for(var id in objectsMap) {
+                board.removeObject(objectsMap[id]);
+            }
+            objectsMap = {};
+            document.getElementById('elementsList').innerHTML = '';
             board.clearTraces();
             board.update();
         }
