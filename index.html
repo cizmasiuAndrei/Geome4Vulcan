@@ -1,37 +1,244 @@
+
 <!DOCTYPE html>
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeoGebra-ul Meu Clona</title>
-    <!-- Stilurile pentru JSXGraph -->
+    <title>GeoGebra Advanced Clone</title>
+    
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.4.1/jsxgraph.css" />
-    <!-- Librăria JSXGraph -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.4.1/jsxgraphcore.js"></script>
+    
     <style>
-        body { font-family: sans-serif; text-align: center; }
-        #box { width: 600px; height: 600px; margin: 20px auto; border: 1px solid #ccc; }
+        :root {
+            --bg-dark: #121214;
+            --sidebar-bg: #1a1a1e;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f3f4f6;
+            --border: #2e2e38;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Panoul de control (Sidebar) */
+        .sidebar {
+            width: 320px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.4rem;
+            color: var(--accent);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #222227;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .section h3 {
+            margin: 0 0 5px 0;
+            font-size: 1rem;
+            color: #a1a1aa;
+        }
+
+        input, button {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #121214;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .row input {
+            width: 50%;
+        }
+
+        button {
+            background: var(--accent);
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            border: none;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Zona Grafică */
+        .canvas-container {
+            flex-grow: 1;
+            position: relative;
+            background: #fff;
+        }
+
+        #box {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Responsive pentru telefoane */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+            .canvas-container {
+                height: 60vh;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <h1>Instrument de Geometrie Interactivă</h1>
-    <p>Trage de puncte pentru a modifica triunghiul!</p>
+    <div class="sidebar">
+        <h2>GeoGebra Engine</h2>
+        
+        <div class="section">
+            <h3>Reprezintă f(x)</h3>
+            <input type="text" id="functionInput" placeholder="Ex: x^2 - 2*x, sin(x), 2*x+1">
+            <button onclick="plotFunction()">Trasează Graficul</button>
+        </div>
 
-    <!-- Aici va apărea graficul interactiv -->
-    <div id="box" class="jxgbox"></div>
+        <div class="section">
+            <h3>Adaugă Punct (X, Y)</h3>
+            <div class="row">
+                <input type="number" id="pointX" placeholder="X" step="any">
+                <input type="number" id="pointY" placeholder="Y" step="any">
+            </div>
+            <input type="text" id="pointName" placeholder="Nume (Ex: A, B, M)">
+            <button onclick="addNewPoint()">Plasează Punctul</button>
+        </div>
+
+        <div class="section">
+            <h3>Acțiuni</h3>
+            <button onclick="clearAll()" style="background: #ef4444;">Șterge Tot</button>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <div id="box" class="jxgbox"></div>
+    </div>
 
     <script>
-        // Inițializăm spațiul de lucru (plana)
-        var board = JXG.JSXGraph.initBoard('box', {boundingbox: [-5, 5, 5, -5], axis: true});
+        // Inițializăm planul grafic
+        var board = JXG.JSXGraph.initBoard('box', {
+            boundingbox: [-8, 8, 8, -8], 
+            axis: true,
+            grid: true,
+            showCopyright: false,
+            keepaspectratio: false
+        });
 
-        // Creăm 3 puncte mobile
-        var p1 = board.create('point', [-2, -2], {name: 'A', size: 4});
-        var p2 = board.create('point', [2, -2], {name: 'B', size: 4});
-        var p3 = board.create('point', [0, 3], {name: 'C', size: 4});
+        // Liste pentru a ține evidența elementelor adăugate ca să le putem șterge la nevoie
+        var plottedElements = [];
 
-        // Creăm un poligon (triunghi) pe baza celor 3 puncte
-        var polygon = board.create('polygon', [p1, p2, p3], {fillColor: '#5cacee', opacity: 0.3});
+        // 1. FUNCȚIE: Trasează f(x)
+        function plotFunction() {
+            var expr = document.getElementById('functionInput').value;
+            if (!expr) return;
+
+            try {
+                // Curățăm textul pentru a fi sigur că funcțiile ca sin/cos/tan sunt recunoscute
+                // JSXGraph folosește JavaScript nativ în spate pentru evaluarea funcțiilor
+                var graph = board.create('functiongraph', [
+                    function(x) {
+                        // Transformăm ^ în cod interpretat Math.pow de JS sau valid pentru parser
+                        // Folosim Math pentru funcții complexe direct în string dacă e cazul
+                        with (Math) {
+                            // Înlocuim x^2 cu x*x sau folosim o metodă sigură pentru puteri simple
+                            let safeExpr = expr.replace(/x\^2/g, "(x*x)").replace(/x\^3/g, "(x*x*x)");
+                            return eval(safeExpr);
+                        }
+                    }
+                ], {strokeWidth: 3, strokeColor: '#6366f1'});
+                
+                plottedElements.push(graph);
+                document.getElementById('functionInput').value = ''; // Reset input
+            } catch (error) {
+                alert("Eroare la sintaxă! Folosește '*' pentru înmulțire (Ex: 2*x în loc de 2x) și format valid.");
+            }
+        }
+
+        // 2. FUNCȚIE: Adaugă Punct Coordonate
+        function addNewPoint() {
+            var x = parseFloat(document.getElementById('pointX').value);
+            var y = parseFloat(document.getElementById('pointY').value);
+            var name = document.getElementById('pointName').value || 'P';
+
+            if (isNaN(x) || isNaN(y)) {
+                alert("Te rog introdu coordonate valide pentru X și Y.");
+                return;
+            }
+
+            // Generăm punctul pe axă
+            var point = board.create('point', [x, y], {
+                name: name, 
+                size: 4, 
+                color: '#ec4899', 
+                withLabel: true,
+                label: {offset: [10, 10], color: '#121214'}
+            });
+
+            plottedElements.push(point);
+            
+            // Resetăm câmpurile
+            document.getElementById('pointX').value = '';
+            document.getElementById('pointY').value = '';
+            document.getElementById('pointName').value = '';
+        }
+
+        // 3. FUNCȚIE: Resetare ecran
+        function clearAll() {
+            board.removeObject(plottedElements);
+            plottedElements = [];
+            // Re-inițializăm board-ul curat
+            board.clearTraces();
+            board.update();
+        }
     </script>
 </body>
 </html>
