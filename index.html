@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoGebra-ul Meu Clona</title>
+    <!-- Stilurile pentru JSXGraph -->
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.4.1/jsxgraph.css" />
+    <!-- Librăria JSXGraph -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsxgraph/1.4.1/jsxgraphcore.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; }
+        #box { width: 600px; height: 600px; margin: 20px auto; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+    <h1>Instrument de Geometrie Interactivă</h1>
+    <p>Trage de puncte pentru a modifica triunghiul!</p>
+
+    <!-- Aici va apărea graficul interactiv -->
+    <div id="box" class="jxgbox"></div>
+
+    <script>
+        // Inițializăm spațiul de lucru (plana)
+        var board = JXG.JSXGraph.initBoard('box', {boundingbox: [-5, 5, 5, -5], axis: true});
+
+        // Creăm 3 puncte mobile
+        var p1 = board.create('point', [-2, -2], {name: 'A', size: 4});
+        var p2 = board.create('point', [2, -2], {name: 'B', size: 4});
+        var p3 = board.create('point', [0, 3], {name: 'C', size: 4});
+
+        // Creăm un poligon (triunghi) pe baza celor 3 puncte
+        var polygon = board.create('polygon', [p1, p2, p3], {fillColor: '#5cacee', opacity: 0.3});
+    </script>
+</body>
+</html>
